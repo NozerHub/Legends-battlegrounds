@@ -392,13 +392,8 @@ end
 
 local function StartAutoFarm()
     while AutoFarmEnabled do
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
-                TeleportToPlayerBack(currentTarget)
-            end
+        if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
+            TeleportToPlayerBack(currentTarget)
         end
         task.wait(0.1)
     end
@@ -422,7 +417,10 @@ Tabs.FarmSettings:AddButton({
 })
 
 Dropdown:OnChanged(function(Value)
-    currentTarget = game.Players:FindFirstChild(Value)
+    local selectedPlayer = game.Players:FindFirstChild(Value)
+    if selectedPlayer and currentTarget ~= selectedPlayer then
+        currentTarget = selectedPlayer
+    end
 end)
 
 game.Players.PlayerRemoving:Connect(function(player)
@@ -435,9 +433,7 @@ Toggle:OnChanged(function()
     AutoFarmEnabled = Toggle.Value
 
     if AutoFarmEnabled then
-        if currentTarget then
-            task.spawn(StartAutoFarm)
-        end
+        task.spawn(StartAutoFarm)
         task.spawn(PreventFalling)
     else
         currentTarget = nil
@@ -445,7 +441,7 @@ Toggle:OnChanged(function()
 end)
 
 game.Players.LocalPlayer.CharacterAdded:Connect(function()
-    if AutoFarmEnabled and currentTarget then
+    if AutoFarmEnabled then
         task.spawn(StartAutoFarm)
         task.spawn(PreventFalling)
     end
