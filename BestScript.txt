@@ -6,7 +6,7 @@ local Window = Fluent:CreateWindow({
     Title = "Legends Battlegrounds",
     SubTitle = "-- Mobile Made by NozerHub Latest Version!",
     TabWidth = 120,
-    Size = UDim2.fromOffset(450, 300),
+    Size = UDim2.fromOffset(500, 350),
     Acrylic = true,
     Theme = "Darker",
     MinimizeKey = Enum.KeyCode.LeftControl
@@ -16,7 +16,8 @@ local Tabs = {
     Credits = Window:AddTab({ Title = "| Info", Icon = "scroll" }),
     Settings = Window:AddTab({ Title = "| Settings", Icon = "settings" }),
     Farm = Window:AddTab({ Title = "| Farm", Icon = "swords" }), 
-    Farm Settings = Window:AddTab({ Title = "| Farm Settings", Icon = "sword" }), 
+    FarmSettings = Window:AddTab({ Title = "| Farm Settings", Icon = "scale" }),
+    Misc = Window:AddTab({ Title = "| Misc", Icon = "book }), 
 }
 
 local Options = Fluent.Options
@@ -63,6 +64,8 @@ LocalPlayer.Idled:Connect(function()
         VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
     end
 end)
+
+local PlayerSettingsSection = Tabs.Farm:AddSection("Player Settings")
 
 local AutoAttackToggle = Tabs.Farm:AddToggle("AutoAttackToggle", { Title = "Auto Attack", Default = false })
 
@@ -174,7 +177,7 @@ AutoDashAttackToggle:OnChanged(function()
     end
 end)
 
-local AutoSkillToggle = Tabs.Farm:AddToggle("AutoSkillToggle", { Title = "Auto Skill", Default = false })
+local AutoSkillToggle = Tabs.Farm:AddToggle("AutoSkillToggle", { Title = "Auto Use Skills", Default = false })
 
 AutoSkillToggle:OnChanged(function()
     if AutoSkillToggle.Value then
@@ -297,15 +300,16 @@ end)
 
 Toggle:SetValue(false)
 
-local Dropdown = Tabs.Farm:AddDropdown("PlayerDropdown", {
-    Title = "Select Player",
-    Default = "", -- Inicialmente sem valor
+local Dropdown = Tabs.FarmSettings:AddDropdown("PlayerDropdown", {
+    Title = "Select A Player",
+    Default = "SELECT A PLAYER!", -- Inicialmente sem valor
     Values = {}   -- Preenchido dinamicamente
 })
 
-local Toggle = Tabs.Farm:AddToggle("AutoFarmPlayerToggle", { 
-    Title = "Kill Farm", 
-    Default = false 
+local Toggle = Tabs.FarmSettings:AddToggle("AutoFarmPlayerToggle", { 
+    Title = "Farm Player", 
+    Default = false,
+    Description = "Farm On Selected Player From Dropdown."
 })
 
 local AutoFarmEnabled = false
@@ -389,6 +393,14 @@ local function updatePlayerList()
     end
 end
 
+-- Adicionando o botão de "Refresh Players"
+Tabs.FarmSettings:AddButton({
+    Title = "Refresh Players",
+    Callback = function()
+        updatePlayerList() -- Atualiza a lista de jogadores quando o botão for clicado
+    end
+})
+
 Dropdown:OnChanged(function(Value)
     -- Atualiza o jogador alvo quando o Dropdown mudar
     currentTarget = game.Players:FindFirstChild(Value)
@@ -454,7 +466,7 @@ end)
 Toggle:SetValue(false)
 
 local Toggle = Tabs.Farm:AddToggle("ESPPlayersToggle", {
-    Title = "ESP PLAYERS",
+    Title = "Esp Players",
     Default = false
 })
 
@@ -518,6 +530,41 @@ end)
 -- Controlar o Toggle para ativar/desativar highlights
 Toggle:OnChanged(function()
     updatePlayerHighlights()
+end)
+
+Toggle:SetValue(false)
+
+local Toggle = Tabs.Farm:AddToggle("AutoBlockToggle", {
+    Title = "Auto Block",
+    Default = false
+})
+
+local AutoBlockEnabled = false
+
+local function AutoBlock()
+    local args = {
+        [1] = {
+            ["Request"] = "FDown"
+        }
+    }
+    
+    game:GetService("Players").LocalPlayer.Character.Network:FireServer(unpack(args))
+    
+    local args2 = {
+        [1] = {
+            ["Request"] = "FUp"
+        }
+    }
+    
+    game:GetService("Players").LocalPlayer.Character.Network:FireServer(unpack(args2))
+end
+
+Toggle:OnChanged(function()
+    AutoBlockEnabled = Toggle.Value
+
+    if AutoBlockEnabled then
+        AutoBlock()
+    end
 end)
 
 Toggle:SetValue(false)
