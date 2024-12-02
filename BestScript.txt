@@ -313,16 +313,13 @@ end
 
 local function StartAutoFarm()
     while AutoFarmEnabled do
-        -- Só muda o alvo após o jogador atual ser eliminado
         if currentTarget == nil or not currentTarget.Character or not game.Players:FindFirstChild(currentTarget.Name) or currentTarget.Character.Humanoid.Health <= 0 then
-            -- Encontra o próximo jogador disponível
             currentTarget = FindClosestPlayer()
             if currentTarget then
                 TeleportToPlayerBack(currentTarget)
             end
         end
 
-        -- Executa a teleporte para o alvo atual
         if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
             TeleportToPlayerBack(currentTarget)
         end
@@ -335,7 +332,7 @@ Toggle:OnChanged(function()
     AutoFarmEnabled = Toggle.Value
 
     if AutoFarmEnabled then
-        -- Só começa o farm com o jogador encontrado
+        currentTarget = FindClosestPlayer()
         if currentTarget then
             TeleportToPlayerBack(currentTarget)
         end
@@ -442,22 +439,40 @@ Toggle:OnChanged(function()
 
     if AutoFarmEnabled then
         if currentTarget then
+            -- Reinicia o processo do AutoFarm caso o toggle seja ativado novamente
             task.spawn(StartAutoFarm)
             task.spawn(PreventFalling)
         end
     else
+        -- Para o processo ao desativar o toggle
         currentTarget = nil
     end
 end)
 
 game.Players.LocalPlayer.CharacterAdded:Connect(function()
     if AutoFarmEnabled then
+        -- Reinicia o auto farm e a prevenção de queda quando o personagem for renascido
         task.spawn(StartAutoFarm)
         task.spawn(PreventFalling)
     end
 end)
 
 updatePlayerList()
+
+Toggle:OnChanged(function()
+    AutoFarmEnabled = Toggle.Value
+
+    if AutoFarmEnabled then
+        if currentTarget then
+            TeleportToPlayerBack(currentTarget)
+        end
+        StartAutoFarm()
+    else
+        currentTarget = nil
+    end
+end)
+
+Toggle:SetValue(false)
 
 local Toggle = Tabs.Farm:AddToggle("TeleportToDummyToggle", { 
     Title = "Attack Dummy", 
