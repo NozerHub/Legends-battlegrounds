@@ -313,13 +313,16 @@ end
 
 local function StartAutoFarm()
     while AutoFarmEnabled do
+        -- Só muda o alvo após o jogador atual ser eliminado
         if currentTarget == nil or not currentTarget.Character or not game.Players:FindFirstChild(currentTarget.Name) or currentTarget.Character.Humanoid.Health <= 0 then
+            -- Encontra o próximo jogador disponível
             currentTarget = FindClosestPlayer()
             if currentTarget then
                 TeleportToPlayerBack(currentTarget)
             end
         end
 
+        -- Executa a teleporte para o alvo atual
         if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
             TeleportToPlayerBack(currentTarget)
         end
@@ -332,7 +335,7 @@ Toggle:OnChanged(function()
     AutoFarmEnabled = Toggle.Value
 
     if AutoFarmEnabled then
-        currentTarget = FindClosestPlayer()
+        -- Só começa o farm com o jogador encontrado
         if currentTarget then
             TeleportToPlayerBack(currentTarget)
         end
