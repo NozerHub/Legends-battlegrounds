@@ -70,7 +70,7 @@ local PlayerSettingsSection = Tabs.Farm:AddSection("Player")
 
 local AutoAttackToggle = Tabs.Farm:AddToggle("AutoAttackToggle", { Title = "Auto Attack", Default = false })
 
-AutoAttackToggle:OnChanged(function()
+local function attack()
     if AutoAttackToggle.Value then
         -- Executa o M1Down
         local argsDown = {
@@ -89,6 +89,17 @@ AutoAttackToggle:OnChanged(function()
         }
         game:GetService("Players").LocalPlayer.Character.Network:FireServer(unpack(argsUp))
     end
+end
+
+AutoAttackToggle:OnChanged(function()
+    attack()
+end)
+
+-- Função para garantir que o script continue funcionando após a morte/renascimento
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function()
+    -- Reata a função de ataque quando o personagem renascer
+    task.wait(1)  -- Espera um segundo para garantir que o personagem esteja pronto
+    attack()
 end)
 
 Tabs.Misc:AddButton({
