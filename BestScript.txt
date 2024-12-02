@@ -4,10 +4,10 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 
 local Window = Fluent:CreateWindow({
     Title = "Legends Battlegrounds",
-    SubTitle = "-- Mobile Made by NozerHub Latest Version!",
+    SubTitle = "Made by NozerHub Latest Version!",
     TabWidth = 120,
     Size = UDim2.fromOffset(500, 350),
-    Acrylic = true,
+    Acrylic = false,
     Theme = "Darker",
     MinimizeKey = Enum.KeyCode.LeftControl
 })
@@ -17,7 +17,8 @@ local Tabs = {
     Settings = Window:AddTab({ Title = "| Settings", Icon = "settings" }),
     Farm = Window:AddTab({ Title = "| Farm", Icon = "swords" }), 
     FarmSettings = Window:AddTab({ Title = "| Farm Settings", Icon = "scale" }),
-    Misc = Window:AddTab({ Title = "| Misc", Icon = "book }), 
+    AntiLag = Window:AddTab({ Title = "| Anti Lag", Icon = "shield" }), 
+    Misc = Window:AddTab({ Title = "| Misc", Icon = "book" }), 
 }
 
 local Options = Fluent.Options
@@ -42,7 +43,7 @@ Tabs.Credits:AddParagraph({
 })
 
 Tabs.Credits:AddParagraph({
-    Title = "Update 30/11"
+    Title = "Update 2/11"
 })
 
 local AntiAFKEnabled = true
@@ -65,7 +66,7 @@ LocalPlayer.Idled:Connect(function()
     end
 end)
 
-local PlayerSettingsSection = Tabs.Farm:AddSection("Player Settings")
+local PlayerSettingsSection = Tabs.Farm:AddSection("Player")
 
 local AutoAttackToggle = Tabs.Farm:AddToggle("AutoAttackToggle", { Title = "Auto Attack", Default = false })
 
@@ -139,7 +140,6 @@ Tabs.Misc:AddButton({
     end
 })
 
--- Configurações de Interface e Salvar Configurações
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 SaveManager:IgnoreThemeSettings()
@@ -302,14 +302,13 @@ Toggle:SetValue(false)
 
 local Dropdown = Tabs.FarmSettings:AddDropdown("PlayerDropdown", {
     Title = "Select A Player",
-    Default = "SELECT A PLAYER!", -- Inicialmente sem valor
-    Values = {}   -- Preenchido dinamicamente
+    Default = "SELECT A PLAYER!",
+    Values = {}
 })
 
 local Toggle = Tabs.FarmSettings:AddToggle("AutoFarmPlayerToggle", { 
     Title = "Farm Player", 
     Default = false,
-    Description = "Farm On Selected Player From Dropdown."
 })
 
 local AutoFarmEnabled = false
@@ -327,12 +326,10 @@ local function TeleportToPlayerBack(targetPlayer)
         if character then
             local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
             if humanoidRootPart then
-                -- Ajustando a posição para ficar atrás do alvo e tocando o chão
-                local behindPosition = targetPosition - (targetLookVector * 2.5)  -- Distância ajustada para 2.5
-                -- Ajuste para que o personagem encoste no chão
+                local behindPosition = targetPosition - (targetLookVector * 2.5)
                 local height = humanoidRootPart.Position.Y
                 local adjustedPosition = Vector3.new(behindPosition.X, height, behindPosition.Z)
-                humanoidRootPart.CFrame = CFrame.new(adjustedPosition, targetPosition)  -- Mantém o personagem virado para as costas do alvo
+                humanoidRootPart.CFrame = CFrame.new(adjustedPosition, targetPosition)
             end
         end
     end
@@ -360,17 +357,11 @@ end
 
 local function StartAutoFarm()
     while AutoFarmEnabled do
-        if currentTarget == nil or not currentTarget.Character or not game.Players:FindFirstChild(currentTarget.Name) or currentTarget.Character.Humanoid.Health <= 0 then
-            currentTarget = FindClosestPlayer()
-            if currentTarget then
-                TeleportToPlayerBack(currentTarget)
-            end
-        end
-
         if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
             TeleportToPlayerBack(currentTarget)
+        else
+            currentTarget = FindClosestPlayer()
         end
-
         wait(0.1)
     end
 end
@@ -383,31 +374,34 @@ local function updatePlayerList()
         end
     end
 
-    if #playerNames > 0 then
-        -- Define o nome do primeiro jogador como valor padrão
-        Dropdown:SetValue(playerNames[1])
-    end
-
     if Dropdown then
         Dropdown:SetValues(playerNames)
+        if #playerNames > 0 then
+            Dropdown:SetValue(playerNames[1])
+        end
     end
 end
 
--- Adicionando o botão de "Refresh Players"
 Tabs.FarmSettings:AddButton({
     Title = "Refresh Players",
     Callback = function()
-        updatePlayerList() -- Atualiza a lista de jogadores quando o botão for clicado
+        updatePlayerList()
     end
 })
 
 Dropdown:OnChanged(function(Value)
-    -- Atualiza o jogador alvo quando o Dropdown mudar
     currentTarget = game.Players:FindFirstChild(Value)
 end)
 
 game.Players.PlayerAdded:Connect(updatePlayerList)
-game.Players.PlayerRemoving:Connect(updatePlayerList)
+game.Players.PlayerRemoving:Connect(function(player)
+    if currentTarget == player then
+        currentTarget = FindClosestPlayer()
+        if currentTarget then
+            Dropdown:SetValue(currentTarget.Name)
+        end
+    end
+end)
 
 updatePlayerList()
 
@@ -475,7 +469,6 @@ local RunService = game:GetService("RunService")
 local highlight = Instance.new("Highlight")
 highlight.Name = "Highlight"
 
--- Definir a cor desejada
 local highlightColor = Color3.fromRGB(0, 200, 0)  -- Verde moderado
 
 local function addHighlightToPlayer(player)
@@ -496,7 +489,6 @@ local function removeHighlightFromPlayer(player)
     end
 end
 
--- Função para aplicar ou remover highlights com base no Toggle
 local function updatePlayerHighlights()
     for _, player in pairs(game.Players:GetPlayers()) do
         if Toggle.Value then
@@ -507,7 +499,6 @@ local function updatePlayerHighlights()
     end
 end
 
--- Adicionar highlight para os jogadores atuais, se o Toggle estiver ativo
 updatePlayerHighlights()
 
 -- Monitorar a adição de novos jogadores
@@ -527,44 +518,97 @@ RunService.Heartbeat:Connect(function()
     updatePlayerHighlights()
 end)
 
--- Controlar o Toggle para ativar/desativar highlights
 Toggle:OnChanged(function()
     updatePlayerHighlights()
 end)
 
 Toggle:SetValue(false)
 
-local Toggle = Tabs.Farm:AddToggle("AutoBlockToggle", {
-    Title = "Auto Block",
-    Default = false
+Tabs.AntiLag:AddButton({
+    Title = "Anti Lag",
+    Callback = function()
+        local ToDisable = {
+            Textures = true,
+            VisualEffects = true,
+            Parts = true,
+            Particles = true,
+            Sky = true
+        }
+
+        local ToEnable = {
+            FullBright = false
+        }
+
+        local Stuff = {}
+
+        for _, v in next, game:GetDescendants() do
+            if ToDisable.Parts then
+                if v:IsA("Part") or v:IsA("Union") or v:IsA("BasePart") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    table.insert(Stuff, 1, v)
+                end
+            end
+
+            if ToDisable.Particles then
+                if v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Explosion") or v:IsA("Sparkles") or v:IsA("Fire") then
+                    v.Enabled = false
+                    table.insert(Stuff, 1, v)
+                end
+            end
+
+            if ToDisable.VisualEffects then
+                if v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
+                    v.Enabled = false
+                    table.insert(Stuff, 1, v)
+                end
+            end
+
+            if ToDisable.Textures then
+                if v:IsA("Decal") or v:IsA("Texture") then
+                    v.Texture = ""
+                    table.insert(Stuff, 1, v)
+                end
+            end
+
+            if ToDisable.Sky then
+                if v:IsA("Sky") then
+                    v.Parent = nil
+                    table.insert(Stuff, 1, v)
+                end
+            end
+        end
+
+        game:GetService("TestService"):Message("Effects Disabler Script : Successfully disabled "..#Stuff.." assets / effects. Settings :")
+
+        for i, v in next, ToDisable do
+            print(tostring(i)..": "..tostring(v))
+        end
+
+        if ToEnable.FullBright then
+            local Lighting = game:GetService("Lighting")
+            
+            Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+            Lighting.FogEnd = math.huge
+            Lighting.FogStart = math.huge
+            Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+            Lighting.Brightness = 5
+            Lighting.ColorShift_Bottom = Color3.fromRGB(255, 255, 255)
+            Lighting.ColorShift_Top = Color3.fromRGB(255, 255, 255)
+            Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+            Lighting.Outlines = true
+        end
+
+        Fluent:Notify({
+            Title = "By Nozer Hub",
+            Content = "Anti Lag Script Activated!",
+            Duration = 5
+        })
+    end
 })
 
-local AutoBlockEnabled = false
-
-local function AutoBlock()
-    local args = {
-        [1] = {
-            ["Request"] = "FDown"
-        }
-    }
-    
-    game:GetService("Players").LocalPlayer.Character.Network:FireServer(unpack(args))
-    
-    local args2 = {
-        [1] = {
-            ["Request"] = "FUp"
-        }
-    }
-    
-    game:GetService("Players").LocalPlayer.Character.Network:FireServer(unpack(args2))
-end
-
-Toggle:OnChanged(function()
-    AutoBlockEnabled = Toggle.Value
-
-    if AutoBlockEnabled then
-        AutoBlock()
+Tabs.AntiLag:AddButton({
+    Title = "FPS Booster",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/vexroxd/My-Script-/main/roblox%20fps%20unlocker%20script.lua'))()
     end
-end)
-
-Toggle:SetValue(false)
+})
