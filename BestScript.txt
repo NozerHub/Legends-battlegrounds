@@ -418,14 +418,23 @@ Tabs.FarmSettings:AddButton({
 
 Dropdown:OnChanged(function(Value)
     local selectedPlayer = game.Players:FindFirstChild(Value)
-    if selectedPlayer and currentTarget ~= selectedPlayer then
+    if selectedPlayer then
         currentTarget = selectedPlayer
+    end
+end)
+
+game.Players.PlayerAdded:Connect(function(player)
+    updatePlayerList()
+    if currentTarget == nil and player.Character then
+        currentTarget = player
+        Dropdown:SetValue(player.Name)
     end
 end)
 
 game.Players.PlayerRemoving:Connect(function(player)
     if currentTarget == player then
         currentTarget = nil
+        updatePlayerList()
     end
 end)
 
