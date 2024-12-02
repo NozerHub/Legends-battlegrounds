@@ -50,7 +50,7 @@ Tabs.Credits:AddParagraph({
 })
 
 Tabs.Credits:AddParagraph({
-    Title = "Update 2/11"
+    Title = "Update 2/12"
 })
 
 local AntiAFKEnabled = true
