@@ -358,6 +358,19 @@ local Toggle = Tabs.FarmSettings:AddToggle("AutoFarmPlayerToggle", {
 local AutoFarmEnabled = false
 local currentTarget = nil
 
+local function PreventFalling()
+    local player = game.Players.LocalPlayer
+    while AutoFarmEnabled do
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+
+        if humanoidRootPart and humanoidRootPart.Position.Y < -10 then
+            humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, 5, humanoidRootPart.Position.Z)
+        end
+        task.wait(0.1)
+    end
+end
+
 local function TeleportToPlayerBack(targetPlayer)
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
@@ -367,22 +380,25 @@ local function TeleportToPlayerBack(targetPlayer)
         local targetPosition = targetCharacter.HumanoidRootPart.Position
         local targetLookVector = targetCharacter.HumanoidRootPart.CFrame.LookVector
 
-        if character then
-            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-            if humanoidRootPart then
-                local behindPosition = targetPosition - (targetLookVector * 2.5)
-                local height = humanoidRootPart.Position.Y
-                local adjustedPosition = Vector3.new(behindPosition.X, height, behindPosition.Z)
-                humanoidRootPart.CFrame = CFrame.new(adjustedPosition, targetPosition)
-            end
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local humanoidRootPart = character.HumanoidRootPart
+            local behindPosition = targetPosition - (targetLookVector * 2.5)
+            local height = humanoidRootPart.Position.Y
+            local adjustedPosition = Vector3.new(behindPosition.X, height, behindPosition.Z)
+            humanoidRootPart.CFrame = CFrame.new(adjustedPosition, targetPosition)
         end
     end
 end
 
 local function StartAutoFarm()
     while AutoFarmEnabled do
-        if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
-            TeleportToPlayerBack(currentTarget)
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
+                TeleportToPlayerBack(currentTarget)
+            end
         end
         task.wait(0.1)
     end
@@ -420,10 +436,18 @@ Toggle:OnChanged(function()
 
     if AutoFarmEnabled then
         if currentTarget then
-            StartAutoFarm()
+            task.spawn(StartAutoFarm)
         end
+        task.spawn(PreventFalling)
     else
         currentTarget = nil
+    end
+end)
+
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+    if AutoFarmEnabled and currentTarget then
+        task.spawn(StartAutoFarm)
+        task.spawn(PreventFalling)
     end
 end)
 
