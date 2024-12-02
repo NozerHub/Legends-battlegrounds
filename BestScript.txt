@@ -178,7 +178,7 @@ SaveManager:LoadAutoloadConfig()
 
 local AutoDashAttackToggle = Tabs.Farm:AddToggle("AutoDashAttackToggle", { Title = "Auto Dash Attack", Default = false })
 
-AutoDashAttackToggle:OnChanged(function()
+local function dashAttack()
     if AutoDashAttackToggle.Value then
         task.spawn(function()
             while AutoDashAttackToggle.Value do
@@ -193,11 +193,20 @@ AutoDashAttackToggle:OnChanged(function()
             end
         end)
     end
+end
+
+AutoDashAttackToggle:OnChanged(function()
+    dashAttack()
+end)
+
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    dashAttack()
 end)
 
 local AutoSkillToggle = Tabs.Farm:AddToggle("AutoSkillToggle", { Title = "Auto Use Skills", Default = false })
 
-AutoSkillToggle:OnChanged(function()
+local function useSkills()
     if AutoSkillToggle.Value then
         task.spawn(function()
             while AutoSkillToggle.Value do
@@ -214,6 +223,15 @@ AutoSkillToggle:OnChanged(function()
             end
         end)
     end
+end
+
+AutoSkillToggle:OnChanged(function()
+    useSkills()
+end)
+
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    useSkills()
 end)
 
 local Toggle = Tabs.Farm:AddToggle("AutoAwakenToggle", {
@@ -221,7 +239,7 @@ local Toggle = Tabs.Farm:AddToggle("AutoAwakenToggle", {
     Default = false
 })
 
-Toggle:OnChanged(function()
+local function awaken()
     if Toggle.Value then
         while Toggle.Value do
             local args = {
@@ -231,10 +249,18 @@ Toggle:OnChanged(function()
             }
 
             game:GetService("Players").LocalPlayer.Character.Network:FireServer(unpack(args))
-
-            wait(0.1)  -- Intervalo de 0.1 segundo entre as execuções
+            task.wait(0.1)
         end
     end
+end
+
+Toggle:OnChanged(function()
+    awaken()
+end)
+
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    awaken()
 end)
 
 local Toggle = Tabs.Farm:AddToggle("AutoFarmPlayerToggle", { 
