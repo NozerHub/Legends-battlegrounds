@@ -379,34 +379,12 @@ local function TeleportToPlayerBack(targetPlayer)
     end
 end
 
-local function FindClosestPlayer()
-    local closestPlayer = nil
-    local closestDistance = math.huge
-
-    for _, targetPlayer in pairs(game.Players:GetPlayers()) do
-        if targetPlayer ~= game.Players.LocalPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") and targetPlayer.Character.Humanoid.Health > 0 then
-            local playerPosition = targetPlayer.Character.HumanoidRootPart.Position
-            local localPlayerPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-            local distance = (playerPosition - localPlayerPosition).Magnitude
-
-            if distance < closestDistance then
-                closestDistance = distance
-                closestPlayer = targetPlayer
-            end
-        end
-    end
-
-    return closestPlayer
-end
-
 local function StartAutoFarm()
     while AutoFarmEnabled do
         if currentTarget and currentTarget.Character and currentTarget.Character:FindFirstChild("HumanoidRootPart") then
             TeleportToPlayerBack(currentTarget)
-        else
-            currentTarget = FindClosestPlayer()
         end
-        wait(0.1)
+        task.wait(0.1)
     end
 end
 
@@ -417,13 +395,7 @@ local function updatePlayerList()
             table.insert(playerNames, player.Name)
         end
     end
-
-    if Dropdown then
-        Dropdown:SetValues(playerNames)
-        if #playerNames > 0 then
-            Dropdown:SetValue(playerNames[1])
-        end
-    end
+    Dropdown:SetValues(playerNames)
 end
 
 Tabs.FarmSettings:AddButton({
@@ -437,32 +409,25 @@ Dropdown:OnChanged(function(Value)
     currentTarget = game.Players:FindFirstChild(Value)
 end)
 
-game.Players.PlayerAdded:Connect(updatePlayerList)
 game.Players.PlayerRemoving:Connect(function(player)
     if currentTarget == player then
-        currentTarget = FindClosestPlayer()
-        if currentTarget then
-            Dropdown:SetValue(currentTarget.Name)
-        end
+        currentTarget = nil
     end
 end)
-
-updatePlayerList()
 
 Toggle:OnChanged(function()
     AutoFarmEnabled = Toggle.Value
 
     if AutoFarmEnabled then
         if currentTarget then
-            TeleportToPlayerBack(currentTarget)
+            StartAutoFarm()
         end
-        StartAutoFarm()
     else
         currentTarget = nil
     end
 end)
 
-Toggle:SetValue(false)
+updatePlayerList()
 
 local Toggle = Tabs.Farm:AddToggle("TeleportToDummyToggle", { 
     Title = "Attack Dummy", 
