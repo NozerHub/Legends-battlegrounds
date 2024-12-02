@@ -420,18 +420,14 @@ Tabs.FarmSettings:AddButton({
 })
 
 Dropdown:OnChanged(function(Value)
-    local selectedPlayer = game.Players:FindFirstChild(Value)
-    if selectedPlayer then
-        currentTarget = selectedPlayer
+    currentTarget = game.Players:FindFirstChild(Value)
+    if currentTarget then
+        print("Target changed to: " .. currentTarget.Name)  -- Verificação de qual jogador foi selecionado
     end
 end)
 
 game.Players.PlayerAdded:Connect(function(player)
     updatePlayerList()
-    if currentTarget == nil and player.Character then
-        currentTarget = player
-        Dropdown:SetValue(player.Name)
-    end
 end)
 
 game.Players.PlayerRemoving:Connect(function(player)
@@ -445,8 +441,10 @@ Toggle:OnChanged(function()
     AutoFarmEnabled = Toggle.Value
 
     if AutoFarmEnabled then
-        task.spawn(StartAutoFarm)
-        task.spawn(PreventFalling)
+        if currentTarget then
+            task.spawn(StartAutoFarm)
+            task.spawn(PreventFalling)
+        end
     else
         currentTarget = nil
     end
