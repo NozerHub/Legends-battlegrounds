@@ -5,7 +5,7 @@ if placeId ~= allowedPlaceId then
     return
 end
 
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/NozerHub/Legends-battlegrounds/refs/heads/main/BestScript.txt"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
@@ -429,25 +429,13 @@ end
 Tabs.FarmSettings:AddButton({
     Title = "Refresh Players",
     Callback = function()
-        updatePlayerList()
+        updatePlayerList() -- Atualiza a lista de jogadores somente quando o botão for clicado
     end
 })
 
 Dropdown:OnChanged(function(Value)
     currentTarget = game.Players:FindFirstChild(Value)
 end)
-
-game.Players.PlayerAdded:Connect(updatePlayerList)
-game.Players.PlayerRemoving:Connect(function(player)
-    if currentTarget == player then
-        currentTarget = FindClosestPlayer()
-        if currentTarget then
-            Dropdown:SetValue(currentTarget.Name)
-        end
-    end
-end)
-
-updatePlayerList()
 
 Toggle:OnChanged(function()
     AutoFarmEnabled = Toggle.Value
